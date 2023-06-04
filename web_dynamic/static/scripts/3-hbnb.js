@@ -1,59 +1,64 @@
-$(document).ready(function(init) {
+$(document).ready(init);
+
+const HOST = '0.0.0.0';
+
+function init () {
   const amenityObj = {};
-  const Host = '0.0.0.0';
-  const PLACES_URL = `http://${HOST}:5001/api/v1/places_search/`;
-
-
-  $('.amenities .popover input').on('change', function () {
-    const name = $(this).data('name');
-    const id = $(this).data('id');
-
-    if (this.checked) {
-      amenityObj[name] = id;
-    } else {
-      delete amenityObj[name];
+  $('.amenities .popover input').change(function () {
+    if ($(this).is(':checked')) {
+      amenityObj[$(this).attr('data-name')] = $(this).attr('data-id');
+    } else if ($(this).is(':not(:checked)')) {
+      delete amenityObj[$(this).attr('data-name')];
     }
-
-    const names = Object.keys(amenityObj).sort().join(', ');
-    $('.amenities h4').text(names);
+    const names = Object.keys(amenityObj);
+    $('.amenities h4').text(names.sort().join(', '));
   });
 
-  $.get(`http://${HOST}:5001/api/v1/status/`, function(data) {
-    if (data.status === 'OK') {
+  apiStatus();
+  fetchPlaces();
+}
+
+function apiStatus () {
+  const API_URL = `http://${HOST}:5001/api/v1/status/`;
+  $.get(API_URL, (data, textStatus) => {
+    if (textStatus === 'success' && data.status === 'OK') {
       $('#api_status').addClass('available');
     } else {
       $('#api_status').removeClass('available');
     }
   });
-  
+}
+
+function fetchPlaces () {
+  const PLACES_URL = `http://${HOST}:5001/api/v1/places_search/`;
   $.ajax({
     url: PLACES_URL,
     type: 'POST',
     headers: { 'Content-Type': 'application/json' },
     data: JSON.stringify({}),
-    success: function(data) {
-      data.forEach(function(place) {
-        const article = `
-          <article>
-            <div class="title_box">
-              <h2>${place.name}</h2>
-            <div class="price_by_night">$${place.price_by_night}</div>
-            </div>
-            <div class="information">
-              <div class="max_guest">${place.max_guest} Guest(s)}</div>
-              <div class="number_rooms">${place.number_rooms} Bedroom(s)</div>
-              <div class="number_bathrooms">${place.number_bathrooms} Bathroom(s)}</div>
-            </div>
-            <div class="description">
-              ${place.description}
-            </div>
-          </article>
-        `;
+    success: function (response) {
+      for (const r of response) {
+        const article = [
+        '<article>',
+        '<div class="title_box">',
+        `<h2>${r.name}</h2>`,
+        `<div class="price_by_night">$${r.price_by_night}</div>`,
+        '</div>',
+        '<div class="information">',
+        `<div class="max_guest">${r.max_guest} Guest(s)</div>`,
+        `<div class="number_rooms">${r.number_rooms} Bedroom(s)</div>`,
+        `<div class="number_bathrooms">${r.number_bathrooms} Bathroom(s)</div>`,
+        '</div>',
+        '<div class="description">',
+        `${r.description}`,
+        '</div>',
+        '</article>'
+        ];
         $('section.places').append(article.join(''));
-      });
+      }
     },
-    error: function(error) {
+    error: function (error) {
       console.log(error);
     }
   });
-});
+}

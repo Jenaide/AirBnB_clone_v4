@@ -1,28 +1,28 @@
-function init() {
+$(document).ready(init);
+const HOST = '0.0.0.0';
+
+function init () {
   const amenityObj = {};
-  const Host = '0.0.0.0';
-
-  $('.amenities .popover input').on('change', function () {
-    const name = $(this).data('name');
-    const id = $(this).data('id');
-
-    if (this.checked) {
-      amenityObj[name] = id;
-    } else {
-      delete amenityObj[name];
+  $('.amenities .popover input').change(function () {
+    if ($(this).is(':checked')) {
+      amenityObj[$(this).attr('data-name')] = $(this).attr('data-id');
+    } else if ($(this).is(':not(:checked)')) {
+      delete amenityObj[$(this).attr('data-name')];
     }
-
-    const names = Object.keys(amenityObj).sort().join(', ');
-    $('.amenities h4').text(names);
+    const names = Object.keys(amenityObj);
+    $('.amenities h4').text(names.sort().join(', '));
   });
 
-  $.get('http://${HOST}:5001/api/v1/status/', function(data) {
-    if (data.status === 'OK') {
+  apiStatus();
+}
+
+function apiStatus () {
+  const API_URL = `http://${HOST}:5001/api/v1/status/`;
+  $.get(API_URL, (data, textStatus) => {
+    if (textStatus === 'success' && data.status === 'OK') {
       $('#api_status').addClass('available');
     } else {
       $('#api_status').removeClass('available');
     }
   });
 }
-
-$(document).ready(init);

@@ -1,19 +1,15 @@
+$(document).ready(init);
+
 function init() {
   const amenityObj = {};
-
-  $('.amenities .popover input').on('change', function () {
-    const name = $(this).data('name');
-    const id = $(this).data('id');
-
-    if (this.checked) {
-      amenityObj[name] = id;
-    } else {
-      delete amenityObj[name];
+  $('.amenities .popover input').change(function () {
+    if ($(this).is(':checked')) {
+      amenityObj[$(this).attr('data-name')] = $(this).attr('data-id');
+    } else if ($(this).is(':not(:checked)')) {
+      delete amenityObj[$(this).attr('data-name')];
     }
 
-    const names = Object.keys(amenityObj).sort().join(', ');
-    $('.amenities h4').text(names);
+    const names = Object.keys(amenityObj);
+    $('.amenities h4').text(names.sort().join(', '));
   });
 }
-
-$(document).ready(init);
